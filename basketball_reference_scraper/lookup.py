@@ -5,9 +5,14 @@ import unidecode, os, sys, unicodedata
     Implementation borrowed from https://stackoverflow.com/questions/59686989/levenshtein-distance-with-bound-limit
 """
 def levenshtein(s1, s2, maximum):  
+    # if 4 > 3
     if len(s1) > len(s2):
+        # nick, dan = dan, nick
+        # s1 = dan
+        # s2 = nick
         s1, s2 = s2, s1
 
+        # range(3 + 1)
     distances = range(len(s1) + 1)
     for i2, c2 in enumerate(s2):
         distances_ = [i2+1]
@@ -28,11 +33,14 @@ def levenshtein(s1, s2, maximum):
     are returned for final user approval.
 """
 def lookup(player, ask_matches = True):
+    # br names have names of all players in DB
     path = os.path.join(os.path.dirname(__file__), 'br_names.txt')
+    # convert unicode player name to ascii
     normalized = unidecode.unidecode(player)
     matches = []
     
     with open(path) as file:
+        # read all the lines of our file
         Lines = file.readlines()
         for line in Lines:
             """
@@ -63,6 +71,7 @@ def lookup(player, ask_matches = True):
             print("{}: {}".format(i, match[0])) 
             i += 1           
         
+        # picks a player if multiple matches found 
         selection = int(input("Pick one: "))
         print("Results for {}:\n".format(matches[selection][0]))
         return matches[selection][0]
