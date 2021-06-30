@@ -1,19 +1,32 @@
+# import libs
+
 import pandas as pd
 from requests import get
 from bs4 import BeautifulSoup
 
 try:
+    # load team dictionary abbreviations and sets
     from constants import TEAM_TO_TEAM_ABBR, TEAM_SETS
+    # load in remove accent function 
     from utils import remove_accents
 except:
+    # if there's an except, add the extra directory 
     from basketball_reference_scraper.constants import TEAM_TO_TEAM_ABBR, TEAM_SETS
     from basketball_reference_scraper.utils import remove_accents
 
 def get_roster(team, season_end_year):
+    '''
+    get_roster function, takes in team, and the current season
+    '''
+    # request link
     r = get(f'https://www.basketball-reference.com/teams/{team}/{season_end_year}.html')
+    # df is none
     df = None
+    # if the request is successful
     if r.status_code==200:
+        # make soup object
         soup = BeautifulSoup(r.content, 'html.parser')
+        # find the table
         table = soup.find('table')
         df = pd.read_html(str(table))[0]
         df.columns = ['NUMBER', 'PLAYER', 'POS', 'HEIGHT', 'WEIGHT', 'BIRTH_DATE',
