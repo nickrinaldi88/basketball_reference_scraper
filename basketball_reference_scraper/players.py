@@ -10,31 +10,44 @@ except:
     from basketball_reference_scraper.lookup import lookup
 
 def get_stats(_name, stat_type='PER_GAME', playoffs=False, career=False, ask_matches = True):
+    '''
+    get stats function taking in a name, state_type, playoff statues, career stats, and ask matches
+    '''
+    # The name is the result of the levenshtein lookup, which is the name and ask matches 
     name = lookup(_name, ask_matches)
+    # get the suffix of that player_name
     suffix = get_player_suffix(name).replace('/', '%2F')
+    # selector is stat_type.lower()
     selector = stat_type.lower()
+    # if playoffs are true, add playoffs to selector string
     if playoffs:
         selector = 'playoffs_'+selector
+    # get request of stats page with specific selector and player suffix 
     r = get(f'https://widgets.sports-reference.com/wg.fcgi?css=1&site=bbr&url={suffix}&div=div_{selector}')
+    # if response is successful
     if r.status_code==200:
         soup = BeautifulSoup(r.content, 'html.parser')
         table = soup.find('table')
+        # grab table, and create data frame of it
         df = pd.read_html(str(table))[0]
+        # rename DF columns 
         df.rename(columns={'Season': 'SEASON', 'Age': 'AGE',
                   'Tm': 'TEAM', 'Lg': 'LEAGUE', 'Pos': 'POS'}, inplace=True)
         if 'FG.1' in df.columns:
+            # rename to FG%
             df.rename(columns={'FG.1': 'FG%'}, inplace=True)
         if 'eFG' in df.columns:
             df.rename(columns={'eFG': 'eFG%'}, inplace=True)
         if 'FT.1' in df.columns:
             df.rename(columns={'FT.1': 'FT%'}, inplace=True)
-
+        
+        # get index of entire career
         career_index = df[df['SEASON']=='Career'].index[0]
         if career:
             df = df.iloc[career_index+2:, :]
         else:
             df = df.iloc[:career_index, :]
-
+        
         df = df.reset_index().drop('index', axis=1)
         return df
 
